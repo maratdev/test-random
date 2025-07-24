@@ -1,0 +1,71 @@
+body {
+  background: #f5f5f5;
+}
+
+.app-scrollable {
+  height: 500px;
+  overflow: auto;
+  padding: 0 16px;
+  border: 1px solid rgba(140, 140, 140, 0.35);
+  border-radius: 12px;
+  margin: 40px auto;
+  max-width: 35%;
+  background: #fff;
+}
+
+.app-sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding-top: 16px;
+  padding-bottom: 8px;
+  background: #fff;
+}
+
+.app-search {
+  border-radius: 8px;
+}
+
+.app-list-header {
+  margin: 0;
+  padding: 0;
+}
+
+.drag-handle {
+  display: inline-block;
+  cursor: grab;
+  margin-left: 8px;
+  color: #888;
+  font-size: 20px;
+  vertical-align: middle;
+  user-select: none;
+}
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.ant-list-item {
+  display: flex;
+  align-items: center;
+}
+
+.app-checkbox {
+  margin-right: 12px;
+}
+
+.dragging {
+  box-shadow: 0 4px 16px #1677ff44, 0 1.5px 0 #1677ff;
+  background: #f0f7ff;
+  z-index: 2;
+}
+
+/* Стили для скролла */
+.app-scrollable::-webkit-scrollbar {
+  width: 8px;
+}
+.app-scrollable::-webkit-scrollbar-thumb {
+  background: #e0e0e0;
+  border-radius: 4px;
+}
+
+

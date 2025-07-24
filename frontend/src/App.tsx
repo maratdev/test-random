@@ -8,7 +8,6 @@ import {api} from './api';
 import {debounce} from 'lodash';
 
 interface DataType {
-	gender: string;
 	name: string;
 	email: string;
 	avatar: string;
@@ -22,12 +21,13 @@ const App: React.FC = () => {
 	const [loading, setLoading] = useState(false);
 	const [data, setData] = useState<DataType[]>([]);
 	const [selected, setSelected] = useState<string[]>([]);
-	const [search, setSearch] = useState('');
+	const [search, setSearch] = useState(() => localStorage.getItem('search') || '');
 	const [hasMore, setHasMore] = useState(true);
 	const pageRef = useRef(0);
 
 	const debouncedSearch = useRef(
 		debounce((val: string) => {
+			localStorage.setItem('search', val);
 			setSearch(val);
 		}, 300)
 	).current;
@@ -99,7 +99,8 @@ const App: React.FC = () => {
 		>
 			<div className="app-sticky-header">
 				<Input.Search
-					placeholder="Поиск по названию или ID"
+					defaultValue={search}
+					placeholder="Поиск по названию или email"
 					allowClear
 					onChange={e => debouncedSearch(e.target.value)}
 					className="app-search"

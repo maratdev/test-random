@@ -8,7 +8,6 @@ interface Item {
   name: string;
   email: string;
   avatar: string;
-  gender: string;
 }
 
 type OrderMap = Record<string, string[]>;
@@ -19,7 +18,6 @@ const allItems: Item[] = Array.from({ length: TOTAL_ITEMS }, (_, i) => ({
   name: faker.person.fullName(),
   email: faker.internet.email(),
   avatar: faker.image.avatar(),
-  gender: faker.person.gender(),
 }));
 
 const orderMap: OrderMap = {};
@@ -35,7 +33,7 @@ router.get('/', (req: Request, res: Response) => {
     ? allItems.filter(
         item =>
           item.name.toLowerCase().includes(search) ||
-          item.id.includes(search)
+          item.email.toLowerCase().includes(search)
       )
     : allItems;
 

@@ -5,7 +5,8 @@ services:
       dockerfile: Dockerfile
       target: prod
     environment:
-      - NODE_ENV=production
+      NODE_ENV: production
+      PORT: ${BACKEND_PORT}
     ports:
       - "${BACKEND_PORT}:3001"
     restart: unless-stopped
@@ -15,6 +16,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       target: prod
+    depends_on:
+      - backend
     environment:
       - NODE_ENV=production
     ports:

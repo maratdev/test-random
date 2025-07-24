@@ -24,11 +24,7 @@ body {
 
 .app-search {
   border-radius: 8px;
-}
-
-.app-list-header {
-  margin: 0;
-  padding: 0;
+  padding-bottom: 8px;
 }
 
 .drag-handle {

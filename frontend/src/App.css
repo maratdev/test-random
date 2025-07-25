@@ -9,7 +9,8 @@ body {
   border: 1px solid rgba(140, 140, 140, 0.35);
   border-radius: 12px;
   margin: 40px auto;
-  max-width: 35%;
+  min-width: 35%;
+  max-width: 500px;
   background: #fff;
 }
 

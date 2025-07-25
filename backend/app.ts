@@ -13,6 +13,11 @@ app.use(morgan('dev'));
 
 app.use('/api', router);
 
+
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  res.status(500).json({ error: 'Internal server error' });
+});
+
 app.listen(PORT, () => {
   logger.info(`🚀 Server started on http://localhost:${PORT}`);
 });

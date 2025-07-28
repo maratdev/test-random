@@ -1,5 +1,7 @@
-import { Router, Request, Response } from 'express';
-import { faker } from '@faker-js/faker';
+import {Request, Response, Router} from 'express';
+import {faker} from '@faker-js/faker';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const router = Router();
 
@@ -10,17 +12,42 @@ interface Item {
   avatar: string;
 }
 
-type OrderMap = Record<string, string[]>;
+const ORDER_FILE_PATH = path.join(__dirname, 'order.json');
+
+function saveOrder(order: string[]): void {
+  try {
+    fs.writeFileSync(ORDER_FILE_PATH, JSON.stringify(order, null, 2));
+  } catch (error) {
+    console.error('Ошибка сохранения порядка:', error);
+  }
+}
+
+function loadOrder(): string[] {
+  try {
+    if (fs.existsSync(ORDER_FILE_PATH)) {
+      const data = fs.readFileSync(ORDER_FILE_PATH, 'utf8');
+      return JSON.parse(data);
+    }
+  } catch (error) {
+    console.error('Ошибка загрузки порядка:', error);
+  }
+  return [];
+}
+
+// Глобальный порядок для всех элементов
+let globalOrder: string[] = [];
 
 const TOTAL_ITEMS = 1_000_000;
 const allItems: Item[] = Array.from({ length: TOTAL_ITEMS }, (_: unknown, i: number) => ({
   id: String(i + 1),
-  name: faker.person.fullName(),
+  name: `${String(i + 1)}. ${faker.person.fullName()}`,
   email: faker.internet.email(),
   avatar: faker.image.avatar(),
 }));
 
-const orderMap: OrderMap = {};
+const savedOrder = loadOrder();
+globalOrder = savedOrder.length > 0 ? savedOrder : allItems.map(item => item.id);
+
 const selectedSet: Set<string> = new Set();
 
 router.get('/', (req: Request, res: Response, next) => {
@@ -31,18 +58,22 @@ router.get('/', (req: Request, res: Response, next) => {
 
     let items = search
       ? allItems.filter(
-          item =>
-            item.name.toLowerCase().includes(search) ||
-            item.email.toLowerCase().includes(search)
+          item => {
+            return (
+                item.id === search ||
+              item.name.toLowerCase().includes(search) ||
+              item.email.toLowerCase().includes(search)
+            );
+          }
         )
       : allItems;
 
-    const order = orderMap[search] || [];
-    if (order.length > 0) {
-      const orderedSet = new Set(order);
+    if (globalOrder.length > 0) {
+      const orderedSet = new Set(globalOrder);
       const idToItem = Object.fromEntries(items.map(it => [it.id, it])) as Record<string, Item>;
-      const orderedItems = order.map(id => idToItem[id]).filter(Boolean);
+      const orderedItems = globalOrder.map((id: string) => idToItem[id]).filter(Boolean);
       const restItems = items.filter(item => !orderedSet.has(item.id));
+
       items = [...orderedItems, ...restItems];
     }
 
@@ -58,8 +89,7 @@ router.get('/', (req: Request, res: Response, next) => {
 
 router.get('/order', (req: Request, res: Response, next) => {
   try {
-    const search = (req.query.search as string | undefined)?.toLowerCase() || '';
-    res.json(orderMap[search] || []);
+    res.json(globalOrder);
   } catch (error) {
     next(error);
   }
@@ -68,9 +98,33 @@ router.get('/order', (req: Request, res: Response, next) => {
 
 router.post('/order', (req: Request, res: Response, next) => {
   try {
-    const search = (req.query.search as string | undefined)?.toLowerCase() || '';
     const ids = Array.isArray(req.body) ? req.body : [];
-    orderMap[search] = ids.filter((id): id is string => typeof id === 'string');
+    const search = (req.query.search as string | undefined)?.toLowerCase() || '';
+
+    if (search) {
+      const newGlobalOrder = [...globalOrder];
+
+      const firstSearchItemIndex = newGlobalOrder.findIndex(id => ids.includes(id));
+      
+      if (firstSearchItemIndex !== -1) {
+        ids.forEach(id => {
+          const index = newGlobalOrder.indexOf(id);
+          if (index !== -1) {
+            newGlobalOrder.splice(index, 1);
+          }
+        });
+
+        ids.forEach((id, index) => {
+          newGlobalOrder.splice(firstSearchItemIndex + index, 0, id);
+        });
+      }
+      
+      globalOrder = newGlobalOrder;
+    } else {
+      globalOrder = ids.filter((id): id is string => typeof id === 'string');
+    }
+    
+    saveOrder(globalOrder);
     res.json({ success: true });
   } catch (error) {
     next(error);
